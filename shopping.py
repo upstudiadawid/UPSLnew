@@ -32,10 +32,14 @@ st.sidebar.title("Opcje analizy")
 age_filter = st.sidebar.slider("Wiek klienta", int(data["Age"].min()), int(data["Age"].max()), (18, 60))
 category_filter = st.sidebar.multiselect("Kategorie produktów", data["Category"].unique(), data["Category"].unique())
 
+# Filtr podkategorii produktów
+subcategory_filter = st.sidebar.multiselect("Podkategorie produktów", data["Subcategory"].unique(), data["Subcategory"].unique())
+
 # Filtrowanie danych
 filtered_data = data[(data["Age"] >= age_filter[0]) & 
                      (data["Age"] <= age_filter[1]) & 
-                     (data["Category"].isin(category_filter))]
+                     (data["Category"].isin(category_filter)) &
+                     (data["Subcategory"].isin(subcategory_filter))]
 
 # Wyświetlanie filtrowanych danych
 st.write("### Filtrowane dane", filtered_data)
@@ -128,3 +132,26 @@ if "Customer Satisfaction" in filtered_data.columns and "Purchase Amount (USD)" 
 else:
     st.write("Dane dotyczące korelacji nie są dostępne.")
 
+# Wykres 9: Średnia kwota zakupów wg kategorii i sezonu
+st.write("### Średnia kwota zakupów wg kategorii i sezonu")
+if "Category" in filtered_data.columns and "Season" in filtered_data.columns:
+    category_season_mean = filtered_data.groupby(["Category", "Season"])["Purchase Amount (USD)"].mean().unstack()
+    fig, ax = plt.subplots()
+    category_season_mean.plot(kind="bar", stacked=True, ax=ax, colormap="tab20")
+    ax.set_xlabel("Kategoria")
+    ax.set_ylabel("Średnia kwota zakupów (USD)")
+    st.pyplot(fig)
+else:
+    st.write("Dane dotyczące kategorii i sezonów nie są dostępne.")
+
+# Wykres 10: Liczba zakupów wg kategorii i typu sklepu
+st.write("### Liczba zakupów wg kategorii i typu sklepu")
+if "Category" in filtered_data.columns and "Store Type" in filtered_data.columns:
+    category_store_counts = filtered_data.groupby(["Category", "Store Type"]).size().unstack()
+    fig, ax = plt.subplots()
+    category_store_counts.plot(kind="bar", ax=ax, colormap="Set3")
+    ax.set_xlabel("Kategoria")
+    ax.set_ylabel("Liczba zakupów")
+    st.pyplot(fig)
+else:
+    st.write("Dane dotyczące kategorii i typu sklepu nie są dostępne.")
