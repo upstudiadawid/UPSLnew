@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 
 # Funkcja do wczytywania danych z pamięcią podręczną Streamlit
@@ -19,6 +20,9 @@ if "Customer Satisfaction" not in data.columns:
 
 if "Store Type" not in data.columns:
     data["Store Type"] = np.random.choice(["Online", "Physical"], size=len(data))
+
+if "Subcategory" not in data.columns:
+    data["Subcategory"] = np.random.choice(["Electronics", "Clothing", "Home", "Toys", "Books"], size=len(data))
 
 # Ustawienia strony
 st.title("Shopping Trends Dashboard")
@@ -43,7 +47,7 @@ st.write("## Analiza wizualna")
 st.write("### Liczba zakupów wg kategorii")
 category_counts = filtered_data["Category"].value_counts()
 fig, ax = plt.subplots()
-category_counts.plot(kind="bar", ax=ax)
+sns.barplot(x=category_counts.index, y=category_counts.values, ax=ax, palette="viridis")
 ax.set_xlabel("Kategoria")
 ax.set_ylabel("Liczba zakupów")
 st.pyplot(fig)
@@ -52,7 +56,7 @@ st.pyplot(fig)
 st.write("### Średnia kwota zakupów wg sezonu")
 season_mean = filtered_data.groupby("Season")["Purchase Amount (USD)"].mean()
 fig, ax = plt.subplots()
-season_mean.plot(kind="bar", ax=ax)
+sns.barplot(x=season_mean.index, y=season_mean.values, ax=ax, palette="coolwarm")
 ax.set_xlabel("Sezon")
 ax.set_ylabel("Średnia kwota zakupów (USD)")
 st.pyplot(fig)
@@ -60,7 +64,7 @@ st.pyplot(fig)
 # Wykres 3: Liczba klientów wg wieku
 st.write("### Liczba klientów wg wieku")
 fig, ax = plt.subplots()
-filtered_data["Age"].hist(bins=20, ax=ax)
+sns.histplot(filtered_data["Age"], bins=20, kde=True, color="blue", ax=ax)
 ax.set_xlabel("Wiek")
 ax.set_ylabel("Liczba klientów")
 st.pyplot(fig)
@@ -70,7 +74,7 @@ st.write("### Średnia kwota zakupów wg formy płatności")
 if "Payment Method" in filtered_data.columns:
     payment_mean = filtered_data.groupby("Payment Method")["Purchase Amount (USD)"].mean()
     fig, ax = plt.subplots()
-    payment_mean.plot(kind="bar", ax=ax)
+    sns.barplot(x=payment_mean.index, y=payment_mean.values, ax=ax, palette="magma")
     ax.set_xlabel("Forma płatności")
     ax.set_ylabel("Średnia kwota zakupów (USD)")
     st.pyplot(fig)
@@ -81,7 +85,7 @@ else:
 st.write("### Dystrybucja ocen satysfakcji klientów")
 if "Customer Satisfaction" in filtered_data.columns:
     fig, ax = plt.subplots()
-    filtered_data["Customer Satisfaction"].hist(bins=5, ax=ax)
+    sns.histplot(filtered_data["Customer Satisfaction"], bins=5, kde=False, color="green", ax=ax)
     ax.set_xlabel("Ocena satysfakcji")
     ax.set_ylabel("Liczba klientów")
     st.pyplot(fig)
@@ -93,9 +97,34 @@ st.write("### Liczba zakupów wg rodzaju sklepu")
 if "Store Type" in filtered_data.columns:
     store_counts = filtered_data["Store Type"].value_counts()
     fig, ax = plt.subplots()
-    store_counts.plot(kind="bar", ax=ax)
+    sns.barplot(x=store_counts.index, y=store_counts.values, ax=ax, palette="Set2")
     ax.set_xlabel("Rodzaj sklepu")
     ax.set_ylabel("Liczba zakupów")
     st.pyplot(fig)
 else:
     st.write("Dane dotyczące rodzaju sklepu nie są dostępne.")
+
+# Wykres 7: Zakupy wg podkategorii
+st.write("### Zakupy wg podkategorii produktów")
+if "Subcategory" in filtered_data.columns:
+    subcategory_counts = filtered_data["Subcategory"].value_counts()
+    fig, ax = plt.subplots()
+    sns.barplot(x=subcategory_counts.index, y=subcategory_counts.values, ax=ax, palette="cubehelix")
+    ax.set_xlabel("Podkategoria")
+    ax.set_ylabel("Liczba zakupów")
+    st.pyplot(fig)
+else:
+    st.write("Dane dotyczące podkategorii nie są dostępne.")
+
+# Wykres 8: Korelacja między oceną satysfakcji a kwotą zakupu
+st.write("### Korelacja między oceną satysfakcji a kwotą zakupu")
+if "Customer Satisfaction" in filtered_data.columns and "Purchase Amount (USD)" in filtered_data.columns:
+    fig, ax = plt.subplots()
+    sns.scatterplot(x=filtered_data["Customer Satisfaction"], 
+                    y=filtered_data["Purchase Amount (USD)"], ax=ax, color="purple")
+    ax.set_xlabel("Ocena satysfakcji")
+    ax.set_ylabel("Kwota zakupu (USD)")
+    st.pyplot(fig)
+else:
+    st.write("Dane dotyczące korelacji nie są dostępne.")
+
